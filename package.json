@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ping": "^0.4.1"
+    "node-schedule": "^2.0.0",
+    "ping": "^0.4.1",
+    "yeelight-awesome": "^1.0.16"
   }
 }
