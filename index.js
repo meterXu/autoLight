@@ -13,8 +13,6 @@ yeelight.connect().then(async res => {
     lightStatus = pro.result.result[1] ==='on'
     schedule.scheduleJob("*/1 * * * * *", async function () {
         const isOnline = await checkOnLine()
-        console.log(new Date().toLocaleString())
-        console.log(`设备在线状况：${isOnline}`)
         await controlLight(isOnline)
     });
 })
