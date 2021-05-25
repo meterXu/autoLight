@@ -5,7 +5,7 @@ const y = require("yeelight-awesome");
 
 
 let lights= {
-    lg1:{lg:null,status:false,reInit:0}
+    lg1:{lg:null,status:false,reInit:0,lock:null}
 }
 
 log('log','自动灯控服务开启')
@@ -30,9 +30,11 @@ async function checkOnLine() {
 
 async function controlLight(lgObj,onoff) {
     try{
-        if(lgObj.status !== onoff){
+        if(lgObj.status !== onoff && !lights.lg1.lock){
+            lights.lg1.lock = true
             log('log','检测到设备状态发生变化')
             await lgObj.lg.toggle()
+            lights.lg1.lock = false
             lgObj.status = onoff
             let msg = `${onoff ? '开灯成功' : '关灯成功'}`
             log('log',msg)
