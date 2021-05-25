@@ -31,6 +31,7 @@ async function checkOnLine() {
 async function controlLight(lgObj,onoff) {
     try{
         if(lgObj.status !== onoff){
+            log('log','检测到设备状态发生变化')
             await lgObj.lg.toggle()
             lgObj.status = onoff
             let msg = `${onoff ? '开灯成功' : '关灯成功'}`
