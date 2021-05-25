@@ -4,18 +4,13 @@ const schedule = require("node-schedule");
 const y = require("yeelight-awesome");
 const yeelight = new y.Yeelight({...config.yeelight});
 
-let my,lightStatus = null
+let lightStatus = null
 const  duration = 2000, brightness = 29
 
-yeelight.connect().then(async res => {
-    my = res
-    const pro = await my.getProperty([y.DevicePropery.BRIGHT, y.DevicePropery.POWER])
-    lightStatus = pro.result.result[1] ==='on'
-    schedule.scheduleJob("*/1 * * * * *", async function () {
-        const isOnline = await checkOnLine()
-        await controlLight(isOnline)
-    });
-})
+schedule.scheduleJob("*/1 * * * * *", async function () {
+    const isOnline = await checkOnLine()
+    await controlLight(isOnline)
+});
 
 
 async function checkOnLine() {
@@ -30,12 +25,11 @@ async function checkOnLine() {
 
 async function controlLight(status) {
     try {
-        if (!my || !my.connected) {
-            my = await yeelight.connect()
-        }
         if(status !== lightStatus)
         {
+            const my = await yeelight.connect()
             const pro = await my.getProperty([y.DevicePropery.BRIGHT, y.DevicePropery.POWER])
+            lightStatus = pro.result.result[1] ==='on'
             if (pro.result.result[1] === (status ? 'off' : 'on')) {
                 await my.toggle()
                 let log = `${status ? '开灯成功' : '关灯成功'}`
