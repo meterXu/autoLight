@@ -2,16 +2,23 @@ const ping = require('ping')
 const config = require('./config/config')
 const schedule = require("node-schedule");
 const y = require("yeelight-awesome");
-const yeelight = new y.Yeelight({...config.yeelight});
 
-let lightStatus = null
+
+let lights= {
+    lg1:{lg:null,status:false}
+}
+
+
+
 const  duration = 2000, brightness = 29
 
-schedule.scheduleJob("*/1 * * * * *", async function () {
-    const isOnline = await checkOnLine()
-    await controlLight(isOnline)
-});
-
+initLight(config.yeelight).then(res=>{
+    lights.lg1=res
+    schedule.scheduleJob("*/1 * * * * *", async function () {
+        const onoff = await checkOnLine()
+        await controlLight(lights.lg1,onoff)
+    });
+})
 
 async function checkOnLine() {
     for (let host of config.watchIP) {
@@ -23,22 +30,44 @@ async function checkOnLine() {
     return Promise.resolve(false)
 }
 
-async function controlLight(status) {
-    try {
-        if(status !== lightStatus)
-        {
-            const my = await yeelight.connect()
-            const pro = await my.getProperty([y.DevicePropery.BRIGHT, y.DevicePropery.POWER])
-            lightStatus = pro.result.result[1] ==='on'
-            if (pro.result.result[1] === (status ? 'off' : 'on')) {
-                await my.toggle()
-                let log = `${status ? '开灯成功' : '关灯成功'}`
-                lightStatus = status
-                console.log(new Date().toLocaleString())
-                console.log(log)
+async function controlLight(lgObj,onoff) {
+    try{
+        if(lgObj.status !== onoff){
+            await lgObj.lg.toggle()
+            lgObj.status = onoff
+            let log = `${onoff ? '开灯成功' : '关灯成功'}`
+            console.log(new Date().toLocaleString())
+            console.log(log)
+        }
+    }
+    catch (err){
+        switch (err.code){
+            case -111:
+            case -113:{
+                lights.lg1 = await initLight()
+                await controlLight(lights.lg1,onoff)
+            }default:{
+                console.error(err)
+                await Promise.reject(err)
             }
         }
-    } catch (err) {
+
+    }
+}
+
+async function initLight(config){
+    try{
+        if(!lights.lg1.lg){
+            const _yl =  new y.Yeelight({...config})
+            _yl.autoReconnect=true
+            let lg = await _yl.connect()
+            const pro = await lg.getProperty([y.DevicePropery.BRIGHT, y.DevicePropery.POWER])
+            let status = pro.result.result[1]==='on'
+            return  Promise.resolve({lg, status})
+        }
+    }
+    catch (err){
         console.error(err)
+        await Promise.reject(err)
     }
 }
