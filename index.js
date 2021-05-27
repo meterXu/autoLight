@@ -31,35 +31,22 @@ async function checkOnLine() {
 async function controlLight(lgObj,onoff) {
     try{
         if(lgObj.status !== onoff && !lights.lg1.lock){
+            const _yl =  new y.Yeelight({...config})
+            let lg = await _yl.connect()
+            lights.lg1 = lg
             lights.lg1.lock = true
             log('log','检测到设备状态发生变化')
             await lgObj.lg.toggle()
             lights.lg1.lock = false
             lgObj.status = onoff
+            lg.disconnect()
             let msg = `${onoff ? '开灯成功' : '关灯成功'}`
             log('log',msg)
         }
     }
     catch (err){
-        if(lights.lg1.reInit<3){
-            switch (err.code){
-                case -111:
-                case -113:{
-                    lights.lg1 = await initLight()
-                    log('log',`重试连接灯次数：${lights.lg1.reInit+1}`)
-                    lights.lg1.reInit++;
-                    await controlLight(lights.lg1,onoff)
-                }default:{
-                    log('error',err)
-                    await Promise.reject(err)
-                }
-            }
-        }else {
-            log('log',`超过重连次数3次`)
-            log('error',err)
-            await Promise.reject(err)
-        }
-
+        log('error',err)
+        await Promise.reject(err)
     }
 }
 
@@ -67,10 +54,10 @@ async function initLight(config){
     try{
         if(!lights.lg1.lg){
             const _yl =  new y.Yeelight({...config})
-            _yl.autoReconnect=true
             let lg = await _yl.connect()
             const pro = await lg.getProperty([y.DevicePropery.BRIGHT, y.DevicePropery.POWER])
             let status = pro.result.result[1]==='on'
+            lg.disconnect()
             return  Promise.resolve({lg, status})
         }
     }
