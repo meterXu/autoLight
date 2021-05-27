@@ -8,7 +8,7 @@ log('log', '自动灯控服务开启')
 schedule.scheduleJob("*/1 * * * * *", async function () {
     const onoff = await checkOnLine()
     if (triggerFalg != onoff) {
-        triggerFalg = true
+        triggerFalg = onoff
         log('log', '检测到设备状态发生变化')
         await controlLight(config.yeelight, onoff)
 
