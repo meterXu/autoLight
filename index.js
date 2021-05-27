@@ -9,7 +9,7 @@ schedule.scheduleJob("*/1 * * * * *", async function () {
     const onoff = await checkOnLine()
     if (triggerFalg != onoff) {
         triggerFalg = onoff
-        log('log', '检测到设备状态发生变化')
+        log('log', `检测到设备${onoff?'开启':'关闭'}`)
         await controlLight(config.yeelight, onoff)
 
     }
