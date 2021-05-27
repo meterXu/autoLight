@@ -27,19 +27,32 @@ async function checkOnLine() {
 }
 
 async function controlLight(config, onoff) {
+    let _yl = null
     try {
-        const _yl = new y.Yeelight({...config})
+        let msg = `${onoff ? '准备开灯' : '准备关灯'}`
+        log('log', msg)
+        _yl = new y.Yeelight({...config})
         let lg = await _yl.connect()
+        log('log', '设备连接成功')
         const pro = await lg.getProperty([y.DevicePropery.BRIGHT, y.DevicePropery.POWER])
         if (pro.result.result[1] === (onoff ? 'off' : 'on')) {
+            msg = `${onoff ? '开始开灯' : '开始关灯'}`
+            log('log', msg)
             await lg.toggle()
-            await _yl.disconnect()
-            let msg = `${onoff ? '开灯成功' : '关灯成功'}`
+            msg = `${onoff ? '开灯成功' : '关灯成功'}`
+            log('log', msg)
+        }else {
+            msg = `${onoff ? '灯已开启' : '灯已关闭'}`
             log('log', msg)
         }
     } catch (err) {
         log('error', err)
         await Promise.reject(err)
+    } finally {
+        if(_yl){
+            await _yl.disconnect()
+            log('log', '设备成功断开')
+        }
     }
 }
 
