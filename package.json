@@ -1,6 +1,6 @@
 {
   "name": "autolight",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -11,6 +11,6 @@
   "dependencies": {
     "node-schedule": "^2.0.0",
     "ping": "^0.4.1",
-    "yeelight-awesome": "^1.0.16"
+    "yeelight-awesome": "^1.1.0"
   }
 }
